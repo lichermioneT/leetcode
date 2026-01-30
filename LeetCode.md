@@ -510,6 +510,326 @@ public:
 
 
 
+## LCR179
+
+购物车内的商品价格按照升序记录于数组 `price`。请在购物车中找到两个商品的价格总和刚好是 `target`。若存在多种情况，返回任一结果即可。
+
+**这是一个升序的数组**
+
+**所以你可以优化 排序的**
+
+**示例 1：**
+
+```
+输入：price = [3, 9, 12, 15], target = 18
+输出：[3,15] 或者 [15,3]
+```
+
+**示例 2：**
+
+```
+输入：price = [8, 21, 27, 34, 52, 66], target = 61
+输出：[27,34] 或者 [34,27]
+
+```
+
+
+
+```
+[3, 9, 12, 15]
+SIZE = 4;
+0 1 2 3
+SZIE-1 = 3;
+
+<SIZE
+<SIZE-1;
+```
+
+
+
+C++版本
+
+```c++
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& price, int target) 
+    {
+        int sz = price.size();
+        int left = 0;
+        int right = sz - 1;
+        vector<int> v;
+        while(left != right)
+        {
+            if(price[left] + price[right] > target)
+            {
+                right--;  // 右边到左边递减
+            }
+            else if(price[left] + price[right] < target)
+            {
+                left++; //  左边到右边递增
+            }
+            else 
+            {
+                v.push_back(price[left]);
+                v.push_back(price[right]);
+                break;
+            }
+        }
+        return v;
+    }
+};
+```
+
+**暴力算法**
+
+````c++
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& price, int target) 
+    {
+        vector<int> v;
+        int sz = price.size();  
+        for(int i  = 0; i < sz - 1; i++)
+        {
+            for(int j = i + 1; j < sz; j++)
+            {
+                if(price[i] + price[j] == target)
+                {
+                    v.push_back(price[i]);
+                    v.push_back(price[j]);
+                    break;
+                }
+            }
+        }
+        return v;
+    }
+};
+````
+
+
+
+## 15三数之和
+
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
+
+**注意：**答案中不可以包含重复的三元组。
+
+**示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+**示例 2：**
+
+```
+输入：nums = [0,1,1]
+输出：[]
+解释：唯一可能的三元组和不为 0 。
+```
+
+**示例 3：**
+
+```
+输入：nums = [0,0,0]
+输出：[[0,0,0]]
+解释：唯一可能的三元组和为 0 。
+```
+
+
+
+**在 C++ 中，迭代器范围永远遵循 **“左闭右开”** 原则 `[begin, end)`。**
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) 
+    {
+        //1.暴力解法，暴力枚举。
+        //2. 如何去重？
+
+        // 1.先排序，枚举，set去重
+
+        // 1.排序，双指针或者二分法，
+        // 找到一种结果之后，跳过重复的元素。 left right 和i
+        // 需要两个地方去重 
+        // vector<vector<int>> ret;
+        // int n = nums.size();
+        
+        // sort(nums.begin(), nums.end());
+        // for(int i = 0; i < n; )
+        // {
+        //     if(nums[i] > 0) break;
+        //     int left = i + 1;
+        //     int right = n - 1;
+        //     int target = -nums[i];
+
+        //     while(left < right)
+        //     {
+        //         int sum = nums[left] + nums[right];
+        //         if(sum > target)
+        //         { 
+        //             right--;
+        //         }
+        //         else if(sum < target) 
+        //         {
+        //             left++;
+        //         }
+        //         else 
+        //         {
+        //             ret.push_back({nums[i], nums[left], nums[right]});
+        //             left++;
+        //             right--;
+
+        //             while(left < right && nums[left] == nums[left-1]) 
+        //             {
+        //                 left++;
+        //             }
+        //             while(left < right && nums[right] == nums[right+1]) 
+        //             {
+        //                 right--;
+        //             }
+        //         }
+        //     }
+
+        //     i++;
+        //     while(i < n && nums[i] == nums[i-1]) i++;
+        // }
+        // return ret;
+
+        vector<vector<int>> ret;
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+
+        for(int i = 0; i < n - 2; i++)
+        {
+            if(nums[i] > 0) break;
+
+            if(i > 0 && nums[i] == nums[i-1]) continue;
+
+            int left = i + 1;
+            int right = n - 1;
+            while(left < right)
+            {
+                int sum = nums[i] + nums[left] + nums[right];
+                if(sum ==  0)
+                {
+                    ret.push_back({nums[i], nums[left], nums[right]});
+                    while (left < right && nums[left] == nums[left + 1]) left++;
+                    while (left < right && nums[right] == nums[right - 1]) right--;
+                    left++;
+                    right--;
+                }
+                else if(sum <  0) 
+                {
+                    left++;
+                }
+                else 
+                {
+                    right--;
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
+
+
+
+c**语言版本**
+
+```c
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** threeSum(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) 
+{
+    // for(int i = 0; i < numsSize - 1; i++)
+    // {
+    //     for(int j = 0; i < numsSize - 1 - i; j++)
+    //     {
+    //         if(nums[j] > nums[j + 1])
+    //         {
+    //             int temp = nums[j];
+    //             nums[j] = nums[j +1];
+    //             nums[j + 1] = temp;
+    //         }
+    //     }
+    // }
+
+    *returnSize = 0;
+    if(numsSize < 3)
+    {
+        return NULL;
+    }
+
+
+    int cmp(const void* a, const void* b)
+    {
+        return *(int*)a - *(int*)b;
+    }
+    qsort(nums, numsSize, sizeof(int),  cmp);
+
+    int capacity = numsSize*numsSize;
+    int** result = (int**)malloc(sizeof(int*) * capacity);         // 定义一个 capacity*capacity的数组，里面存放指针。
+    *returnColumnSizes = (int*)malloc(sizeof(int*) * capacity);    // 
+
+
+    for(int i = 0; i < numsSize - 2; i++)
+    {
+        if(nums[i] > 0) break;
+        if(i > 0 && nums[i] == nums[i-1]) continue;
+
+        int letf = i + 1;
+        int right = numsSize - 1;
+        while(letf < right)
+        {
+            int sum = nums[i] + nums[letf] + nums[right]; // 注意溢出
+            if(sum == 0)
+            {
+                result[*returnSize] = (int*)malloc(sizeof(int)*3);
+                result[*returnSize][0] = nums[i];
+                result[*returnSize][1] = nums[letf];
+                result[*returnSize][2] = nums[right];
+
+                // 记录这一行的列数 (固定是3)
+                (*returnColumnSizes)[*returnSize] = 3;
+                
+                // 结果总数 +1
+                (*returnSize)++;
+
+                while(letf < right && nums[letf]  ==  nums[letf   + 1]) letf++;
+                while(letf < right && nums[right] ==  nums[right] - 1) right--;
+                letf++;
+                right--;
+            }
+            else if(sum < 0) 
+            {
+                letf++;
+            }
+            else 
+            {
+                right--;
+            }
+
+
+        }
+
+    }
+
+    return result;
+}
+```
 
 
 
@@ -518,27 +838,252 @@ public:
 
 
 
+## 18四数之和
+
+[18. 四数之和](https://leetcode.cn/problems/4sum/)
+
+
+
+给你一个由 `n` 个整数组成的数组 `nums` ，和一个目标值 `target` 。请你找出并返回满足下述全部条件且**不重复**的四元组 `[nums[a], nums[b], nums[c], nums[d]]` （若两个四元组元素一一对应，则认为两个四元组重复）：
+
+- `0 <= a, b, c, d < n`
+- `a`、`b`、`c` 和 `d` **互不相同**
+- `nums[a] + nums[b] + nums[c] + nums[d] == target`
+
+你可以按 **任意顺序** 返回答案 。
+
+**示例 1：**
+
+```
+输入：nums = [1,0,-1,0,-2,2], target = 0
+输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+```
+
+**示例 2：**
+
+```
+输入：nums = [2,2,2,2,2], target = 8
+输出：[[2,2,2,2]]
+```
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) 
+    {
+        vector<vector<int>> ret;
+        sort(nums.begin(), nums.end());
+
+        //1. a.固定一个数a, target;
+        //2. a []三数之和等于 target-a;
+        //3. a b[] 双指针等于 target - a - b;
+
+        // 不重复，不漏
+        // a b [left ...  right]
+
+        int n = nums.size();
+        if (n < 4) return ret;
+
+        for(int i = 0; i < n - 3; i++) // 固定数a
+        {
+            if(i > 0 && nums[i] == nums[i - 1]) continue;
+
+            for(int j = i + 1; j < n - 2; j++) // 固定数b;
+            {
+                if(j >i + 1 && nums[j] == nums[j - 1])  continue;
+
+                int left = j + 1;
+                int right = n - 1;
+
+                while(left < right)
+                {
+                    long long sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+                    if(sum == target)
+                    {
+                        ret.push_back({nums[i], nums[j], nums[left], nums[right]});
+
+                        while(left < right && nums[left] == nums[left+1]) left++;
+                        while(left < right && nums[right] == nums[right-1]) right--;
+                        left++;
+                        right--;
+                    }
+                    else if(sum > target)
+                    {
+                        right--;
+                    }
+                    else 
+                    {
+                        left++;
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+};
+```
 
 
 
 
 
+## 209长度最小的子数组
+
+给定一个含有 `n` 个正整数的数组和一个正整数 `target` **。**
+
+找出该数组中满足其总和大于等于 `target` 的长度最小的 **子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：target = 7, nums = [2,3,1,2,4,3]
+输出：2
+解释：子数组 [4,3] 是该条件下的长度最小的子数组。
+```
+
+**示例 2：**
+
+```
+输入：target = 4, nums = [1,4,4]
+输出：1
+```
+
+**示例 3：**
+
+```
+输入：target = 11, nums = [1,1,1,1,1,1,1,1]
+输出：0
+```
 
 
 
+**c++版本**
+
+```c++
+class Solution {
+public:
+    int minSubArrayLen(int target, vector<int>& nums) 
+    {
+        
+        // 最短的子数组，并且是连续的数组。
+        // 滑动窗口
+        // 1.暴力算法
+           // [2,3,1,2,4,3]
+           // target = 7
+           // 暴力枚举全部的数
+
+           //[2 3 1 4]
+           // l     r >= target;
+           //   l   r
+        // 利用单调性，同向双指针,滑动窗口。
+        // 怎么用呢？
+
+        // 1.left = 0; right = 0;
+        // 2.进入窗口
+        // 3.判断 
+        //   出窗口
+        /*
+            r
+            2 3 1 2 4 3
+            l
+
+            1.l = 0; r  = 0; sum = 0;
+            2.进入窗口 sum = 2
+            3.进 sum = 5;
+            4.进 sum = 6;
+            5.进 sum = 8;
+                出，更新sum(这里是这道题更新结果。)
+                len = r-l
+                sum = 6;
+                l++(3)
+            6.进  sum = 10;
+                len = r - l;
+                sum = 7;
+                l++;(1)
+                
+                二次判断
+                len = r - l;
+                sum = 6;
+                l++;l=(2)
+
+            7.进
+        */
+
+        /*
+            为什么是对的？
+            单调性：
+                  r
+            2 3 1 2  4 3
+            l
+
+            l+r>=target，已经没有必要枚举后面的了的。
+            
+        */
+
+        // 时间复杂度2N；N
+        int n = nums.size();
+        int sum = 0;
+        int ret = INT_MAX;
+        for(int left = 0, right = 0; right < n; right++)
+        {
+            sum += nums[right]; // 进入窗口
+            while(sum >= target) // 判断
+            {
+                ret = min(ret, right-left+1); // 跟新结果
+                sum -= nums[left++];   // 滚出窗口
+            }
+        }
+        return ret  == INT_MAX ? 0 : ret;
+    }
+
+/*
+#include <vector>
+#include <algorithm>
+#include <climits> // 用于 INT_MAX
+
+using namespace std;
+
+class Solution {
+public:
+    int minSubArrayLen(int target, vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) return 0;
+
+        int left = 0;
+        int right = 0;
+        int sum = 0;
+        int minLen = INT_MAX; // 初始化为最大整数，方便后面取最小值
+
+        // 移动 right 指针扩大窗口
+        while (right < n) {
+            sum += nums[right];
+
+            // 当窗口内的和满足条件时，尝试缩小窗口
+            while (sum >= target) {
+                // 更新最小长度
+                int currentLen = right - left + 1;
+                minLen = min(minLen, currentLen);
+
+                // 缩小窗口：减去左边的值，左指针右移
+                sum -= nums[left];
+                left++;
+            }
+            
+            // 继续扩大窗口
+            right++;
+        }
+
+        // 如果 minLen 还是 INT_MAX，说明没找到满足条件的子数组，返回 0
+        return (minLen == INT_MAX) ? 0 : minLen;
+    }
+};
+*/
 
 
-
-
-
-
-
-
-
-
-
-
-
+};
+```
 
 
 
