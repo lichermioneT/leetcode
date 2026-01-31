@@ -925,6 +925,105 @@ public:
 
 
 
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+/**
+ * 比较函数：用于 qsort 排序
+ */
+int cmp(const void* a, const void* b) 
+{
+    return (*(int*)a > *(int*)b) ? 1 : -1;
+}
+
+/**
+ * 四数之和函数实现
+ * * 参数详解：
+ * - nums: 输入数组
+ * - numsSize: 数组长度
+ * - target: 目标和
+ * - returnSize: [输出] 结果集中四元组的个数（行数）
+ * - returnColumnSizes: [输出] 一个二级指针，用于返回每行有多少列（此题每行固定 4 列）
+ */
+int** fourSum(int* nums, int numsSize, int target, int* returnSize, int** returnColumnSizes) {
+    *returnSize = 0;
+    if (numsSize < 4) return NULL;
+
+    // 1. 排序：双指针的前提是数组有序
+    qsort(nums, numsSize, sizeof(int), cmp);
+
+    // 预分配空间：先给一个初始容量，之后根据需要 realloc
+    int capacity = 100;
+    int** res = (int**)malloc(sizeof(int*) * capacity);
+    *returnColumnSizes = (int*)malloc(sizeof(int) * capacity);
+
+    for (int i = 0; i < numsSize - 3; i++) {
+        // 第一层去重：如果当前值和前一个值相同，跳过
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+
+        // 剪枝优化：如果当前最小的四个数相加都大于 target，后面没必要找了
+        if ((long long)nums[i] + nums[i+1] + nums[i+2] + nums[i+3] > target) break;
+        // 剪枝优化：如果当前数加上最大的三个数仍小于 target，说明当前数太小，跳过
+        if ((long long)nums[i] + nums[numsSize-1] + nums[numsSize-2] + nums[numsSize-3] < target) continue;
+
+        for (int j = i + 1; j < numsSize - 2; j++) {
+            // 第二层去重
+            if (j > i + 1 && nums[j] == nums[j - 1]) continue;
+
+            // 第二层剪枝
+            if ((long long)nums[i] + nums[j] + nums[j+1] + nums[j+2] > target) break;
+            if ((long long)nums[i] + nums[j] + nums[numsSize-1] + nums[numsSize-2] < target) continue;
+
+            // 第三层：双指针
+            int left = j + 1;
+            int right = numsSize - 1;
+
+            while (left < right) {
+                // 使用 long long 防止加法溢出
+                long long sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+
+                if (sum == target) {
+                    // 动态扩容：如果结果集满了，重新分配空间
+                    if (*returnSize >= capacity) {
+                        capacity *= 2;
+                        res = (int**)realloc(res, sizeof(int*) * capacity);
+                        *returnColumnSizes = (int*)realloc(*returnColumnSizes, sizeof(int) * capacity);
+                    }
+
+                    // 存入结果
+                    int* temp = (int*)malloc(sizeof(int) * 4);
+                    temp[0] = nums[i];
+                    temp[1] = nums[j];
+                    temp[2] = nums[left];
+                    temp[3] = nums[right];
+                    res[*returnSize] = temp;
+                    (*returnColumnSizes)[*returnSize] = 4;
+                    (*returnSize)++;
+
+                    // 双指针去重
+                    while (left < right && nums[left] == nums[left + 1]) left++;
+                    while (left < right && nums[right] == nums[right - 1]) right--;
+                    
+                    left++;
+                    right--;
+                } else if (sum < target) {
+                    left++;
+                } else {
+                    right--;
+                }
+            }
+        }
+    }
+
+    return res;
+}
+```
+
+
+
+
+
 
 
 ## 209长度最小的子数组
@@ -1087,9 +1186,138 @@ public:
 
 
 
+## [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+
+已解答
+
+中等
 
 
 
+相关标签
+
+![premium lock icon](picture/lock-a6627e2c7fa0ce8bc117c109fb4e567d.svg+xml)相关企业
+
+
+
+提示
+
+
+
+给定一个字符串 `s` ，请你找出其中不含有重复字符的 **最长 子串** 的长度。
+
+ 
+
+**示例 1:**
+
+```
+输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。注意 "bca" 和 "cab" 也是正确答案。
+```
+
+**示例 2:**
+
+```
+输入: s = "bbbbb"
+输出: 1
+解释: 因为无重复字符的最长子串是 "b"，所以其长度为 1。
+```
+
+**示例 3:**
+
+```
+输入: s = "pwwkew"
+输出: 3
+解释: 因为无重复字符的最长子串是 "wke"，所以其长度为 3。
+     请注意，你的答案必须是 子串 的长度，"pwke" 是一个子序列，不是子串。
+```
+
+
+
+**c++版本**
+
+```c++
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) 
+    {
+        // 子串。子数组。都是连续的。  
+        // 子序列是不连续的。
+        /*
+        abcabcbb
+        abc bca 
+
+        1.暴力解法
+        abcabcbb
+                r   
+        de a bc a bca
+        l
+                  r   
+        de a bc a bca
+             l
+
+                   r   
+        de a bc a bca
+              l
+        // 双指针同一个方向，就是滑动指针。
+
+        时间复杂度N
+
+        */
+        /*
+        1.left right;
+        2.进----字符进入hash_table right++
+        3.判断 窗口内出现重复字符
+            出 让重复的字符划出窗口，hash删除结果
+        4.更新 重复的时候，更新
+
+        为什么？？ 滑动窗口？这是因为重复了的。
+        */
+        
+        // int hash[128] = {0}; // 数组模拟hash
+        // int n = s.size();
+        // int left = 0;
+        // int right = 0;
+        // int ret = 0;
+        // while(right < n)
+        // {
+        //     hash[s[right]]++;
+        //     while(hash[s[right]] > 1)
+        //     {
+        //         hash[s[left++]]--;
+        //     }
+        //     ret = max(ret, right-left+1);
+        //     right++;
+        // }
+        // return ret;
+        
+        // int n = s.size();
+        // int left = 0, right = 0; 
+        // int count[128] = {0};
+        // int ret = 0;
+        // while(right < n)
+        // {
+        //     char c = s[right];
+        //     count[c]++;
+
+        //     while(count[c] > 1)
+        //     {
+        //         count[s[left]]--;
+        //         left++;
+        //     }
+
+        //     ret = max(ret, right - left + 1);
+        //     right++;
+        // }
+        // return ret;
+
+    
+
+
+    }
+};
+```
 
 
 
